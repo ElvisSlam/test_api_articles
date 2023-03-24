@@ -219,7 +219,6 @@ Future<void> getApi() async {
 class SecondRoute extends StatelessWidget {
   const SecondRoute({super.key});
 
-  String tokenn;
   
 
   @override
