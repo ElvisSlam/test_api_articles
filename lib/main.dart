@@ -24,13 +24,12 @@ class MyApp extends StatefulWidget {
   _MyAppState createState() => _MyAppState();
 }
 
-
 class LoginPage extends StatelessWidget {
-
   final emailController = TextEditingController();
   final mdpController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
+  LoginPage({super.key});
 
   Future<String> veriflogin() async {
     var email = emailController.text;
@@ -50,114 +49,109 @@ class LoginPage extends StatelessWidget {
     var token = data['token'];
 
     return token;
-
   }
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text('Test JSON'),
-        ),
-        body: Center(
-          
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              const Text(
-                'Se Connecter',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 40,
-                ),
+      appBar: AppBar(
+        title: const Text('Test JSON'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            const Text(
+              'Se Connecter',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 40,
               ),
-              const SizedBox(
-                height: 60,
+            ),
+            const SizedBox(
+              height: 60,
+            ),
+            Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  TextFormField(
+                    controller: emailController,
+                    validator: (value) => EmailValidator.validate(value!)
+                        ? null
+                        : "Veuillez entrez un email valide",
+                    maxLines: 1,
+                    decoration: InputDecoration(
+                      hintText: 'Entrez votre mail',
+                      prefixIcon: const Icon(Icons.email),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  TextFormField(
+                    controller: mdpController,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Veuillez entrez votre mot de passe';
+                      }
+                      return null;
+                    },
+                    maxLines: 1,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.lock),
+                      hintText: 'Veuillez entrez votre mot de passe',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      if (_formKey.currentState!.validate()) {
+                        var token = veriflogin();
+                        Navigator.pushNamed(
+                          context,
+                          '/second',
+                        );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.fromLTRB(40, 15, 40, 15),
+                    ),
+                    child: const Text(
+                      'Se connecter',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                ],
               ),
-              Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    TextFormField(
-                      controller: emailController,
-                      validator: (value) => EmailValidator.validate(value!)
-                          ? null
-                          : "Veuillez entrez un email valide",
-                      maxLines: 1,
-                      decoration: InputDecoration(
-                        hintText: 'Entrez votre mail',
-                        prefixIcon: const Icon(Icons.email),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    TextFormField(
-                      controller: mdpController,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Veuillez entrez votre mot de passe';
-                        }
-                        return null;
-                      },
-                      maxLines: 1,
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        prefixIcon: const Icon(Icons.lock),
-                        hintText: 'Enter your password',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          var token = veriflogin();
-                          Navigator.push<void>(
-                            context,
-                            MaterialPageRoute<void>(
-                                builder: (BuildContext context) => const SecondRoute()),
-                          );
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.fromLTRB(40, 15, 40, 15),
-                      ),
-                      child: const Text(
-                        'Se connecter',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                  ],
-                ),
-              )
-            ],
-          ),
+            )
+          ],
         ),
-      );
+      ),
+    );
   }
 }
-
 
 class _MyAppState extends State<MyApp> {
   var _data = '';
   var _json = '';
 
- /*Future<void> fetchData() async {
+  /*Future<void> fetchData() async {
     var url = Uri.http('192.168.1.12:8000', '/api/etudiants');
     final response = await http
         .get(url, headers: {HttpHeaders.authorizationHeader: 'Bearer $token'});
@@ -187,7 +181,16 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: LoginPage()
+      title: 'Named Routes Demo',
+      // Start the app with the "/" named route. In this case, the app starts
+      // on the FirstScreen widget.
+      initialRoute: '/',
+      routes: {
+        // When navigating to the "/" route, build the FirstScreen widget.
+        '/': (context) => LoginPage(),
+        // When navigating to the "/second" route, build the SecondScreen widget.
+        '/second': (context) => const SecondRoute(),
+      },
     );
   }
 }
@@ -195,30 +198,31 @@ class _MyAppState extends State<MyApp> {
 class SecondRoute extends StatelessWidget {
   const SecondRoute({super.key});
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Second Route'),
+        title: const Text('Connexion Réussie'),
       ),
       body: Center(
         child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              const Text(
-                'Se Connecter ',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 40,
-                ),
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            const Text(
+              'Connexion réussie ',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 40,
               ),
-              const SizedBox(
-                height: 60,
-              ),
-            ],
-          ),
+            ),
+            ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text("Retour"))
+          ],
+        ),
       ),
     );
   }
