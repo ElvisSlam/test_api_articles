@@ -14,6 +14,24 @@ class MyHttpOverrides extends HttpOverrides {
   }
 }
 
+Future<String> veriflogin(String email, mdp) async {
+  var url = Uri.http('192.168.1.12:8000', '/api/login');
+  final response = await http.post(url,
+      headers: {HttpHeaders.contentTypeHeader: 'application/json'},
+      body: jsonEncode({
+        "username": "$email",
+        "password": "$mdp",
+      }));
+  print('Body : ${response.body}');
+  print('Status : ${response.statusCode}');
+  print('Headers : ${response.headers}');
+  print('Request : ${response.request}');
+  var data = jsonDecode(response.body);
+  var token = data['token'];
+
+  return token;
+}
+
 void main() {
   HttpOverrides.global = MyHttpOverrides();
   runApp(MyApp());
@@ -25,31 +43,11 @@ class MyApp extends StatefulWidget {
 }
 
 class LoginPage extends StatelessWidget {
-  final emailController = TextEditingController();
-  final mdpController = TextEditingController();
+  static final emailController = TextEditingController();
+  static final mdpController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   LoginPage({super.key});
-
-  Future<String> veriflogin() async {
-    var email = emailController.text;
-    var mdp = mdpController.text;
-    var url = Uri.http('192.168.1.12:8000', '/api/login');
-    final response = await http.post(url,
-        headers: {HttpHeaders.contentTypeHeader: 'application/json'},
-        body: jsonEncode({
-          "username": "$email",
-          "password": "$mdp",
-        }));
-    print('Body : ${response.body}');
-    print('Status : ${response.statusCode}');
-    print('Headers : ${response.headers}');
-    print('Request : ${response.request}');
-    var data = jsonDecode(response.body);
-    var token = data['token'];
-
-    return token;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -117,11 +115,16 @@ class LoginPage extends StatelessWidget {
                   ElevatedButton(
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
-                        var token = veriflogin();
-                        Navigator.pushNamed(
-                          context,
-                          '/second',
-                        );
+                        var token = veriflogin(
+                            emailController.text, mdpController.text);
+                        print('TOKEN : $token');
+                        print('TOKEN : ${token.toString()}');
+                        if (token.toString().isNotEmpty) {
+                          Navigator.pushNamed(
+                            context,
+                            '/second',
+                          );
+                        }
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -189,14 +192,35 @@ class _MyAppState extends State<MyApp> {
         // When navigating to the "/" route, build the FirstScreen widget.
         '/': (context) => LoginPage(),
         // When navigating to the "/second" route, build the SecondScreen widget.
-        '/second': (context) => const SecondRoute(),
+        '/second': (context) => SecondRoute(),
       },
     );
   }
 }
 
+Future<void> getApi() async {
+  String email = LoginPage.emailController.text;
+  String mdp = LoginPage.mdpController.text;
+  var token = veriflogin(email, mdp);
+  var url = Uri.http('192.168.1.12:8000', '/api/etudiants');
+  final response = await http.get(
+    url,
+    headers: {HttpHeaders.contentTypeHeader: 'application/json'},
+  );
+  print('Body : ${response.body}');
+  print('Status : ${response.statusCode}');
+  print('Headers : ${response.headers}');
+  print('Request : ${response.request}');
+  var data = jsonDecode(response.body);
+
+  return data;
+}
+
 class SecondRoute extends StatelessWidget {
   const SecondRoute({super.key});
+
+  String tokenn;
+  
 
   @override
   Widget build(BuildContext context) {
@@ -216,11 +240,16 @@ class SecondRoute extends StatelessWidget {
                 fontSize: 40,
               ),
             ),
+            Text(veriflogin(LoginPage.emailController.text, LoginPage.mdpController.text).then(String result){
+              setState(() {
+                tokenn = result;
+              });
+            }),
             ElevatedButton(
                 onPressed: () {
                   Navigator.pop(context);
                 },
-                child: const Text("Retour"))
+                child: const Text("Retour")),
           ],
         ),
       ),
